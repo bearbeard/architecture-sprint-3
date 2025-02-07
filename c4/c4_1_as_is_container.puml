@@ -1,0 +1,22 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(client, "Клиент")
+Person(admin, "Администратор")
+
+
+System_Boundary(b1, "Тёплый дом") {
+    Container(smart_home_app, "Приложение умного дома", "Java", "Монолитное приложения для управления умным домом")
+    ContainerDb(smart_home_db, "БД умного дома", "Postgres", "Хранение данных обо всей системе")
+}
+
+Container_Ext(device, "Датчики и реле", "Java", "Датчики для сбора информации о температуре и реле для управления")
+
+Rel(smart_home_app, device, "Команда изменения температуры", "https")
+Rel(device, smart_home_app, "Телеметрия", "https")
+Rel(client, smart_home_app, "Управление устройствами, получение телеметрии, регистрация устройств", "https")
+Rel(admin, smart_home_app, "Администрирование", "https")
+Rel(smart_home_app, smart_home_db, "Хранение информации о конфигурации устройств/Изменение конфигурации/Получение информации об устройствах", "jdbc")
+
+@enduml

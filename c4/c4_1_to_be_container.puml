@@ -1,0 +1,65 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(client, "Клиент")
+Person(admin, "Администратор")
+
+
+System_Boundary(b1, "Тёплый дом") {
+    Container(api_gw, "ApiGateway", "Java", "Точка входа в систему умного дома. Маршрутизация запросов, авторизация.")
+    ContainerDb(smart_home_db, "БД умного дома", "Postgres", "Хранение данных обо всей системе")
+
+    Container(smart_home_controller, "smart_home_controller", "Java", "Монолитное приложения для управления умным домом")
+    ContainerDb(smart_home_db, "БД устройств умного дома", "Postgres", "Хранит информацию об устройствах и их конфигурации")
+
+    Container(smart_home_store, "smart_home_store", "Java", "Хранение и выдача информации об устройствах")
+    ContainerDb(smart_home_store_cache, "Cache", "Redis", "Хранит информацию об устройствах для корректного отображения до репликации Write-read")
+    Container_Boundary(c1, "БД устройств") {
+        ContainerDb(smart_home_store_write_db, "Write replica", "Postgres", "Хранит информацию об устройствах и их конфигурации")
+        ContainerDb(smart_home_store_read_db, "Read replica", "Postgres", "Хранит информацию об устройствах и их конфигурации")
+    }
+
+    ContainerQueue(kafka_device_change_event, "Device change topic", "Apache Kafka", "Топик для передачи событий об изменениях устройств")
+    ContainerQueue(kafka_device_add_event, "Device add topic", "Apache Kafka", "Топик для передачи событий о добавлении устройств")
+    ContainerQueue(kafka_device_telemetry_event, "Telemetry topic", "Apache Kafka", "Топик для передачи событий телеметрии")
+    ContainerQueue(kafka_device_notification_event, "Notification topic", "Apache Kafka", "Топик для передачи нотификаций")
+
+    Container(smart_home_device_controller, "smart_home_device_controller", "Java", "Управление устройствами")
+
+    Container(smart_home_notification, "smart_home_notification", "Java", "Уведомление пользователей")
+
+}
+
+Container_Ext(device, "Датчики и реле", "Java", "Датчики для сбора информации о температуре и реле для управления")
+
+Rel(device, api_gw, "Телеметрия", "https")
+Rel(client, api_gw, "Добавление устройств, управление устройствами, получение телеметрии", "https")
+Rel(admin, api_gw, "Администрирование", "https")
+Rel(api_gw, smart_home_controller, "Добавление устройств, управление устройствами", "https")
+Rel(smart_home_controller, smart_home_db, "Хранение информации о конфигурации устройств/Изменение конфигурации/Получение информации об устройствах", "jdbc")
+
+Rel(smart_home_store, smart_home_store_cache, "Конфигурация устройства", "https")
+Rel(smart_home_store, smart_home_store_write_db, "Хранение информации о конфигурации устройств/Изменение конфигурации/Получение информации об устройствах", "jdbc")
+Rel(smart_home_store_read_db, smart_home_store, "Хранение информации о конфигурации устройств/Изменение конфигурации/Получение информации об устройствах", "jdbc")
+Rel(smart_home_store_write_db, smart_home_store_read_db, "репликация данных", "jdbc")
+
+Rel(api_gw, smart_home_store, "Запрос информации об устройствах, получение телеметрии", "https")
+
+Rel(smart_home_controller, kafka_device_add_event, "Событие добавления устройства", "avro")
+Rel(smart_home_controller, kafka_device_change_event, "Событие изменения конфигурации устройства", "avro")
+
+Rel(kafka_device_add_event, smart_home_store, "Событие добавления устройства", "avro")
+Rel(kafka_device_change_event, smart_home_store, "Событие изменения конфигурации устройства", "avro")
+
+Rel(kafka_device_change_event, smart_home_device_controller, "Событие изменения конфигурации устройства", "avro")
+Rel(smart_home_device_controller, device, "Команда изменения параметров устройства", "https")
+
+Rel(api_gw, kafka_device_telemetry_event, "Телеметрия", "avro")
+Rel(kafka_device_telemetry_event, smart_home_store, "Телеметрия", "avro")
+
+Rel(smart_home_controller, kafka_device_notification_event, "Уведомление", "avro")
+Rel(kafka_device_notification_event, smart_home_notification, "Уведомление", "avro")
+Rel(smart_home_notification, client, "Уведомление", "avro")
+
+@enduml
