@@ -8,7 +8,7 @@ Person(admin, "Администратор")
 
 System_Boundary(b1, "Тёплый дом") {
     Container(api_gw, "ApiGateway", "Java", "Точка входа в систему умного дома. Маршрутизация запросов, авторизация.")
-    ContainerDb(smart_home_db, "БД умного дома", "Postgres", "Хранение данных обо всей системе")
+    ContainerDb(api_gw_db, "БД пользователей", "Postgres", "Хранит информацию о пользователях, аторизациях, маршрутах")
 
     Container(smart_home_controller, "smart_home_controller", "Java", "Сервис управления устройствами")
     ContainerDb(smart_home_db, "БД устройств умного дома", "Postgres", "Хранит информацию об устройствах и их состоянии")
@@ -40,16 +40,18 @@ Container_Ext(device, "Датчики и реле", "Java", "Датчики дл
 Rel(device, api_gw, "Телеметрия", "https")
 Rel(client, api_gw, "Добавление устройств, управление устройствами, получение телеметрии", "https")
 Rel(admin, api_gw, "Администрирование", "https")
+Rel(api_gw, api_gw_db, "Добавление пользователей, хранение информации об авторизации", "jdbc")
 Rel(api_gw, smart_home_controller, "Добавление устройств, управление устройствами", "https")
 Rel(smart_home_controller, smart_home_db, "Хранение информации о состоянии устройств/Изменение состояния/Получение информации об устройствах", "jdbc")
 Rel(smart_home_controller, kafka_device_scenario_event, "Событие добавления/изменения сценария", "avro")
 Rel(kafka_device_scenario_event, smart_home_scenario_automation, "Событие добавления/изменения сценария", "avro")
 Rel(smart_home_scenario_automation, kafka_device_change_event, "Событие изменения состояния устройства", "avro")
 Rel(smart_home_scenario_automation, smart_home_scenario_automation_db, "Изменения сценария/получение сценария", "jdbc")
+Rel(smart_home_scenario_automation, kafka_device_notification_event, "Изменения сценария/получение сценария", "jdbc")
 
 Rel(smart_home_store, smart_home_store_cache, "Конфигурация устройства", "https")
-Rel(smart_home_store, smart_home_store_write_db, "Хранение информации о состоянии устройств/Изменение состояния/Получение информации об устройствах", "jdbc")
-Rel(smart_home_store_read_db, smart_home_store, "Хранение информации о состоянии устройств/Изменение состояния/Получение информации об устройствах", "jdbc")
+Rel(smart_home_store, smart_home_store_write_db, "Хранение информации о состоянии устройств/Изменение состояния", "jdbc")
+Rel(smart_home_store_read_db, smart_home_store, "Получение информации об устройствах", "jdbc")
 Rel(smart_home_store_write_db, smart_home_store_read_db, "репликация данных", "jdbc")
 
 Rel(api_gw, smart_home_store, "Запрос состояния устройств, получение телеметрии", "https")

@@ -44,14 +44,15 @@
 
 [to be](c4/c4_2_to_be_container.puml)
 
-
 **Диаграмма компонентов (Components)**
 
-Добавьте диаграмму для каждого из выделенных микросервисов.
+[apigw](c4/component/c4_2_to_be_component_apigw.puml)
+[smart_home_controller](c4/component/c4_2_to_be_component_smart_home_controller.puml)
+[smart_home_device_controller](c4/component/c4_2_to_be_component_smart_home_device_controller.puml)
+[smart_home_notification](c4/component/c4_2_to_be_component_smart_home_notification.puml)
+[smart_home_scenario_automation](c4/component/c4_2_to_be_component_smart_home_scenario_automation.puml)
+[smart_home_store](c4/component/c4_2_to_be_component_smart_home_store.puml)
 
-**Диаграмма кода (Code)**
-
-Добавьте одну диаграмму или несколько.
 
 # Задание 3. Разработка ER-диаграммы
 

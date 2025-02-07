@@ -1,0 +1,18 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(cb_smart_home_controller, "smart_home_controller") {
+    Component(smart_home_controller_api, "API", "Java", "API")
+    Component(smart_home_controller_device_validation, "Device validation", "Java", "Валидация параметров устройств")
+    Component(smart_home_controller_scenario_validation, "Scenario validation", "Java", "Валидация параметров сценария")
+    Component(smart_home_controller_persistence, "Persistance", "Java", "Компонент сохранения данных")
+}
+
+ContainerDb(smart_home_controller_db, "БД устройств умного дома", "Postgres", "Хранит информацию об устройствах и их состоянии")
+
+Rel(smart_home_controller_api, smart_home_controller_device_validation, "Валидирует устройства")
+Rel(smart_home_controller_api, smart_home_controller_scenario_validation, "Валидирует сценарии")
+Rel(smart_home_controller_api, smart_home_controller_persistence, "Сохраняет данные")
+Rel(smart_home_controller_persistence, smart_home_controller_db, "Сохраняет информацию об устройствах и их состоянии")
+@enduml

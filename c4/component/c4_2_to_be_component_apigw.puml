@@ -1,0 +1,18 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+
+Container_Boundary(cb_apigw, "ApiGateway") {
+    Component(api_gw_router, "Routing", "Java", "Маршрутизация запросов")
+    Component(api_gw_ratelimiter, "RateLimiting", "Java", "Лимитирование запросов")
+    Component(api_gw_auth, "Authorization", "Java", "Авторизация")
+}
+
+ContainerDb(api_gw_db, "БД пользователей", "Postgres", "Хранит информацию о пользователях, аторизациях, маршрутах")
+
+Rel(api_gw_router, api_gw_auth, "Авторизация пользователя")
+Rel(api_gw_router, api_gw_ratelimiter, "Проверка лимитов запросов")
+Rel(api_gw_router, api_gw_db, "Добавление пользователей, хранение информации об авторизации", "jdbc")
+
+@enduml

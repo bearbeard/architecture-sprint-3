@@ -1,0 +1,11 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+
+Container_Boundary(cb_smart_home_device_controller, "smart_home_device_controller") {
+    Component(smart_home_device_controller_handler, "Event handler", "Java", "Обрабатывает события изменения состояния устройств")
+    Component(smart_home_device_controller_sender, "Comand sender", "Java", "Отправляет команды на конкретное устройство")
+}
+
+@enduml
