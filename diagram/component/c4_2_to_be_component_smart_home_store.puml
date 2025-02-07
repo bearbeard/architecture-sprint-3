@@ -1,0 +1,30 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+
+Container_Boundary(cb_smart_home_store, "smart_home_store") {
+    Component(smart_home_store_api, "API", "Java", "API")
+    Component(smart_home_store_persistence, "Persistence", "Java", "Компонент сохранения данных")
+    Component(smart_home_store_search, "Search", "Java", "Компонент поиска данных об устройствах")
+    Component(smart_home_store_telemetry, "Telemetry", "Java", "Компонент обработки данных телеметрии")
+}
+
+ContainerDb(smart_home_store_cache, "Cache", "Redis", "Хранит информацию об устройствах для корректного отображения до репликации Write-read")
+
+Container_Boundary(c1, "БД устройств") {
+    ContainerDb(smart_home_store_write_db, "Write replica", "Postgres", "Хранит информацию об устройствах и их состоянии")
+    ContainerDb(smart_home_store_read_db, "Read replica", "Postgres", "Хранит информацию об устройствах и их состоянии")
+}
+
+Rel(smart_home_store_api, smart_home_store_persistence, "Сохранение данных", "")
+Rel(smart_home_store_api, smart_home_store_search, "Поиск данных", "")
+
+Rel(smart_home_store_persistence, smart_home_store_cache, "Конфигурация устройства", "https")
+Rel(smart_home_store_persistence, smart_home_store_write_db, "Хранение информации о состоянии устройств/Изменение состояния", "jdbc")
+Rel(smart_home_store_telemetry, smart_home_store_persistence, "Изменение состояния", "")
+
+Rel(smart_home_store_search, smart_home_store_read_db, "Получение информации об устройствах", "jdbc")
+Rel(smart_home_store_search, smart_home_store_cache, "Получение информации об устройствах", "jdbc")
+Rel(smart_home_store_write_db, smart_home_store_read_db, "репликация данных", "jdbc")
+@enduml

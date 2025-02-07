@@ -1,0 +1,17 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(cb_smart_home_scenario_automation, "smart_home_scenario_automation") {
+    Component(smart_home_scenario_automation_telemetry, "Telemetry", "Java", "Компонент обработки данных телеметрии")
+    Component(smart_home_scenario_automation_scenario, "Scenario", "Java", "Компонент обработки данных изменений в сценариях")
+    Component(smart_home_scenario_automation_scheduler, "Scheduler", "Java", "Компонент контроля запуска запланированных сценариев")
+}
+
+ContainerDb(smart_home_scenario_automation_db, "БД сценариев", "Postgres", "Хранит информацию о сценариях устройств")
+
+Rel(smart_home_scenario_automation_telemetry, smart_home_scenario_automation_db, "Сохраняет данные", "jdbc")
+Rel(smart_home_scenario_automation_scenario, smart_home_scenario_automation_db, "Сохраняет данные", "jdbc")
+Rel(smart_home_scenario_automation_scheduler, smart_home_scenario_automation_db, "Читает данные о сценариях", "jdbc")
+
+@enduml

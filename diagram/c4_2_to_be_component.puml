@@ -1,0 +1,115 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(client, "Клиент")
+Person(admin, "Администратор")
+
+
+System_Boundary(b1, "Тёплый дом") {
+    Container_Boundary(cb_apigw, "ApiGateway") {
+        Component(api_gw_router, "Routing", "Java", "Маршрутизация запросов")
+        Component(api_gw_ratelimiter, "RateLimiting", "Java", "Лимитирование запросов")
+        Component(api_gw_auth, "Authorization", "Java", "Авторизация")
+    }
+
+    ContainerDb(api_gw_db, "БД пользователей", "Postgres", "Хранит информацию о пользователях, аторизациях, маршрутах")
+
+    Container_Boundary(cb_smart_home_controller, "smart_home_controller") {
+        Component(smart_home_controller_api, "API", "Java", "API")
+        Component(smart_home_controller_device_validation, "Device validation", "Java", "Валидация параметров устройств")
+        Component(smart_home_controller_scenario_validation, "Scenario validation", "Java", "Валидация параметров сценария")
+        Component(smart_home_controller_persistence, "Persistance", "Java", "Компонент сохранения данных")
+    }
+
+    ContainerDb(smart_home_controller_db, "БД устройств умного дома", "Postgres", "Хранит информацию об устройствах и их состоянии")
+
+    Container_Boundary(cb_smart_home_store, "smart_home_store") {
+        Component(smart_home_store_api, "API", "Java", "API")
+        Component(smart_home_store_persistence, "Persistence", "Java", "Компонент сохранения данных")
+        Component(smart_home_store_search, "Search", "Java", "Компонент поиска данных об устройствах")
+        Component(smart_home_store_telemetry, "Telemetry", "Java", "Компонент обработки данных телеметрии")
+    }
+
+    ContainerDb(smart_home_store_cache, "Cache", "Redis", "Хранит информацию об устройствах для корректного отображения до репликации Write-read")
+
+    Container_Boundary(c1, "БД устройств") {
+        ContainerDb(smart_home_store_write_db, "Write replica", "Postgres", "Хранит информацию об устройствах и их состоянии")
+        ContainerDb(smart_home_store_read_db, "Read replica", "Postgres", "Хранит информацию об устройствах и их состоянии")
+    }
+
+    Container_Boundary(cb_smart_home_scenario_automation, "smart_home_scenario_automation") {
+            Component(smart_home_scenario_automation_telemetry, "Telemetry", "Java", "Компонент обработки данных телеметрии")
+            Component(smart_home_scenario_automation_scenario, "Scenario", "Java", "Компонент обработки данных изменений в сценариях")
+            Component(smart_home_scenario_automation_scheduler, "Scheduler", "Java", "Компонент контроля запуска запланированных сценариев")
+        }
+
+    ContainerDb(smart_home_scenario_automation_db, "БД сценариев", "Postgres", "Хранит информацию о сценариях устройств")
+
+    ContainerQueue(kafka_device_change_event, "Device change topic", "Apache Kafka", "Топик для передачи событий об изменениях устройств")
+    ContainerQueue(kafka_device_add_event, "Device add topic", "Apache Kafka", "Топик для передачи событий о добавлении устройств")
+    ContainerQueue(kafka_device_telemetry_event, "Telemetry topic", "Apache Kafka", "Топик для передачи событий телеметрии")
+    ContainerQueue(kafka_device_notification_event, "Notification topic", "Apache Kafka", "Топик для передачи нотификаций")
+    ContainerQueue(kafka_device_scenario_event, "Scenario topic", "Apache Kafka", "Топик для передачи изменений сценариев")
+
+    Container(smart_home_device_controller, "smart_home_device_controller", "Java", "Управление устройствами")
+
+    Container(smart_home_notification, "smart_home_notification", "Java", "Уведомление пользователей")
+
+}
+
+Container_Ext(device, "Датчики и реле", "Java", "Датчики для сбора информации о температуре и реле для управления")
+
+Rel(device, api_gw_router, "Телеметрия", "https")
+Rel(client, api_gw_router, "Добавление устройств, управление устройствами, получение телеметрии", "https")
+Rel(admin, api_gw_router, "Администрирование", "https")
+Rel(api_gw_router, api_gw_auth, "Авторизация пользователя")
+Rel(api_gw_router, api_gw_ratelimiter, "Проверка лимитов запросов")
+
+Rel(api_gw_router, api_gw_db, "Добавление пользователей, хранение информации об авторизации", "jdbc")
+
+
+Rel(api_gw_router, smart_home_controller_api, "Добавление устройств, управление устройствами", "jdbc")
+Rel(smart_home_controller_api, smart_home_controller_device_validation, "Валидирует устройства")
+Rel(smart_home_controller_api, smart_home_controller_scenario_validation, "Валидирует сценарии")
+Rel(smart_home_controller_api, smart_home_controller_persistence, "Сохраняет данные")
+Rel(smart_home_controller_persistence, smart_home_controller_db, "Сохраняет информацию об устройствах и их состоянии")
+Rel(smart_home_controller_api, kafka_device_scenario_event, "Событие добавления/изменения сценария", "avro")
+Rel(smart_home_controller_api, kafka_device_add_event, "Событие добавления устройства", "avro")
+Rel(smart_home_controller_api, kafka_device_change_event, "Событие изменения состояния устройства", "avro")
+
+
+Rel(kafka_device_scenario_event, smart_home_scenario_automation_scenario, "Событие добавления/изменения сценария", "avro")
+Rel(kafka_device_telemetry_event, smart_home_scenario_automation_telemetry, "Телеметрия", "avro")
+Rel(smart_home_scenario_automation_scheduler, kafka_device_change_event, "Событие изменения состояния устройства", "avro")
+Rel(smart_home_scenario_automation, smart_home_scenario_automation_db, "Изменения сценария/получение сценария", "jdbc")
+Rel(smart_home_scenario_automation_telemetry, smart_home_scenario_automation_db, "Сохраняет данные", "jdbc")
+Rel(smart_home_scenario_automation_scenario, smart_home_scenario_automation_db, "Сохраняет данные", "jdbc")
+Rel(smart_home_scenario_automation_scheduler, smart_home_scenario_automation_db, "Читает данные о сценариях", "jdbc")
+
+Rel(smart_home_store_persistence, smart_home_store_cache, "Конфигурация устройства", "https")
+Rel(smart_home_store_persistence, smart_home_store_write_db, "Хранение информации о состоянии устройств/Изменение состояния", "jdbc")
+Rel(smart_home_store_telemetry, smart_home_store_persistence, "Изменение состояния", "")
+Rel(smart_home_store_telemetry, smart_home_store_api, "Изменение состояния", "")
+
+Rel(smart_home_store_search, smart_home_store_read_db, "Получение информации об устройствах", "jdbc")
+Rel(smart_home_store_search, smart_home_store_cache, "Получение информации об устройствах", "jdbc")
+Rel(smart_home_store_write_db, smart_home_store_read_db, "репликация данных", "jdbc")
+
+Rel(api_gw_router, smart_home_store_api, "Запрос состояния устройств, получение телеметрии", "https")
+
+
+Rel(kafka_device_add_event, smart_home_store_api, "Событие добавления устройства", "avro")
+Rel(kafka_device_change_event, smart_home_store_api, "Событие изменения состояния устройства", "avro")
+
+Rel(kafka_device_change_event, smart_home_device_controller, "Событие изменения состояния устройства", "avro")
+Rel(smart_home_device_controller, device, "Команда изменения параметров устройства", "https")
+
+Rel(api_gw_router, kafka_device_telemetry_event, "Телеметрия", "avro")
+Rel(kafka_device_telemetry_event, smart_home_store_api, "Телеметрия", "avro")
+
+Rel(smart_home_controller_api, kafka_device_notification_event, "Уведомление", "avro")
+Rel(kafka_device_notification_event, smart_home_notification, "Уведомление", "avro")
+Rel(smart_home_notification, client, "Уведомление", "avro")
+
+@enduml

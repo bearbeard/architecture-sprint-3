@@ -1,0 +1,10 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(cb_smart_home_notification, "smart_home_notification") {
+    Component(smart_home_notification_handler, "Event handler", "Java", "Обработка событий нотификации пользователей")
+    Component(smart_home_notification_sender, "Notification sender", "Java", "Отправляет нотификации конечному пользователю")
+}
+
+@enduml

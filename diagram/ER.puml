@@ -1,0 +1,59 @@
+@startuml
+
+!define primary_key(x) <b>x</b>
+!define foreign_key(x) <u>x</u>
+
+entity "Пользователь" as User {
+    primary_key(id) : UUID
+    --
+    имя : string
+    email : string
+    login : string
+    password_hash : string
+    created_at : datetime
+    updated_at : datetime
+}
+
+
+entity "Тип устройства" as DeviceType {
+    primary_key(id) : UUID
+    --
+    title : string
+    manufacturer : string
+    model : string
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "Устройство" as Device {
+    primary_key(id) : UUID
+    --
+    foreign_key(device_type_id) : UUID [FK к Тип устройства]
+    foreign_key(state_id) : UUID [FK к Состояние]
+    serial_number : string
+    status : string
+    title : string
+    state: json
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "Состояние" as State {
+    primary_key(id) : UUID
+    --
+    serial_number : string
+    status : string
+    title : string
+    state: json
+    created_at : datetime
+    updated_at : datetime
+}
+
+
+User ||--|{ Device : "Досутп устройствам"
+Device ||--|| State : "Состояние устройства"
+DeviceType ||--|{ Device : "Устройства"
+
+
+
+@enduml
