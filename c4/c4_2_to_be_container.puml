@@ -45,6 +45,7 @@ Rel(smart_home_controller, smart_home_db, "Хранение информации
 Rel(smart_home_controller, kafka_device_scenario_event, "Событие добавления/изменения сценария", "avro")
 Rel(kafka_device_scenario_event, smart_home_scenario_automation, "Событие добавления/изменения сценария", "avro")
 Rel(smart_home_scenario_automation, kafka_device_change_event, "Событие изменения состояния устройства", "avro")
+Rel(smart_home_scenario_automation, smart_home_scenario_automation_db, "Изменения сценария/получение сценария", "jdbc")
 
 Rel(smart_home_store, smart_home_store_cache, "Конфигурация устройства", "https")
 Rel(smart_home_store, smart_home_store_write_db, "Хранение информации о состоянии устройств/Изменение состояния/Получение информации об устройствах", "jdbc")
