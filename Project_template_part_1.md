@@ -36,22 +36,22 @@
 ### 5. Визуализация контекста системы — диаграмма С4
 
 
-[as is](c4/c4_1_as_is_container.puml)
+[as is](diagram/c4_1_as_is_container.puml)
 
 # Задание 2. Проектирование микросервисной архитектуры
 
 **Диаграмма контейнеров (Containers)**
 
-[to be](c4/c4_2_to_be_container.puml)
+[to be](diagram/c4_2_to_be_container.puml)
 
 **Диаграмма компонентов (Components)**
 
-[apigw](c4/component/c4_2_to_be_component_apigw.puml)
-[smart_home_controller](c4/component/c4_2_to_be_component_smart_home_controller.puml)
-[smart_home_device_controller](c4/component/c4_2_to_be_component_smart_home_device_controller.puml)
-[smart_home_notification](c4/component/c4_2_to_be_component_smart_home_notification.puml)
-[smart_home_scenario_automation](c4/component/c4_2_to_be_component_smart_home_scenario_automation.puml)
-[smart_home_store](c4/component/c4_2_to_be_component_smart_home_store.puml)
+[apigw](diagram/component/c4_2_to_be_component_apigw.puml)
+[smart_home_controller](diagram/component/c4_2_to_be_component_smart_home_controller.puml)
+[smart_home_device_controller](diagram/component/c4_2_to_be_component_smart_home_device_controller.puml)
+[smart_home_notification](diagram/component/c4_2_to_be_component_smart_home_notification.puml)
+[smart_home_scenario_automation](diagram/component/c4_2_to_be_component_smart_home_scenario_automation.puml)
+[smart_home_store](diagram/component/c4_2_to_be_component_smart_home_store.puml)
 
 
 # Задание 3. Разработка ER-диаграммы
